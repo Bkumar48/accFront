@@ -8,6 +8,31 @@ const FeaturedProducts = () => {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState(false)
 
+    // Add to cart if Logged in
+    const addCart = async (product) => {
+        const token = sessionStorage.getItem('token');
+        if (token) {
+            try {
+                const { data } = await axios.post(
+                    `${process.env.REACT_APP_BASE_URL}/api/v1/cart/addCart`,
+                    {
+                        productId: product.Id,
+                        qty: product.min_qty
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                console.log(data);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    };
+
     const fetchProducts = async () => {
         setLoading(true)
         try {
@@ -56,7 +81,7 @@ const FeaturedProducts = () => {
                                 <h4><span>Price:</span> $ {product.price}</h4>
                             </div>
                             <Link to='#' className='btn'><i class="fa-solid fa-cart-shopping cart" onClick={() => {
-                                addToCart(product);
+                                sessionStorage.getItem('token') ? addCart(product) : addToCart(product)
                             }}></i></Link>
                         </div>
                     ))

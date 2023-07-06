@@ -1,17 +1,76 @@
 import React, { useState, useEffect } from 'react'
+import axios from 'axios';
 
 const Cart = () => {
     const [cart, setCart] = useState([])
+    const [subTotal, setSubTotal] = useState(0)
+    const [updateQty, setUpdateQty] = useState(0)
+
+    // Get cart items from database
+    const fetchCart = async () => {
+        const token = sessionStorage.getItem('token');
+        if (token) {
+            try {
+                const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                setSubTotal(data.data.subTotal);
+                setCart(data.data.items);
+                // console.log(data);
+            } catch (error) {
+                console.error(error);
+                setSubTotal(0);
+                setCart([]);
+            }
+        }
+    }
+
+
+
+    // remove cart items from database
+
+    const removeCart = async (product) => {
+        const token = sessionStorage.getItem('token');
+        const id = product.productId._id;
+        console.log(id);
+        if (token) {
+            try {
+                const { data } = await axios.delete(
+                    `${process.env.REACT_APP_BASE_URL}/api/v1/cart/remProductCart`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        data: {
+                            productId: id,
+                        },
+                    }
+                );
+                const newCart = cart.filter((item) => item.productId._id !== product.productId._id);
+                setCart(newCart);
+                fetchCart();
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    };
+
 
     useEffect(() => {
-        const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
-        setCart(cart)
+        sessionStorage.getItem('token') ? fetchCart() : setCart(sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : []);
     }, [])
+
+
+    // Session storage cart Section
 
     const totalPrice = () => {
         let total = 0;
         cart.forEach((product) => {
-            total += product.price * product.min_qty;
+            // total += product.price * product.min_qty;
+            sessionStorage.getItem('token') ? total += product.productId.price * product.qty : total += product.price * product.min_qty;
         })
         return total;
     }
@@ -37,6 +96,31 @@ const Cart = () => {
             }
         }
     }
+    // update cart items in database
+    const updatedCart = async (product) => {
+        const token = sessionStorage.getItem('token');
+        if (token) {
+            try {
+                const { data } = await axios.put(
+                    `${process.env.REACT_APP_BASE_URL}/api/v1/cart/updateQty/`,
+                    {
+                        cartproductId: product.Id,
+                        qty: updateQty
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                setCart(data.data.items);
+                fetchCart();
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    };
 
     return (
         <>
@@ -64,14 +148,31 @@ const Cart = () => {
                                     cart.map((product) => (
                                         <tr key={product.Id}>
                                             <td><i className="fa fa-times" onClick={() => {
-                                                removeFromCart(product);
+                                                sessionStorage.getItem('token') ? removeCart(product) : removeFromCart(product);
+                                            }} style={{
+                                                cursor: 'pointer',
+                                                color: '#088178'
                                             }}></i></td>
                                             <td><img src={product.image} alt="" /></td>
-                                            <td>{product.banner_title}</td>
+                                            <td>{product.productTile}</td>
                                             <td>$ {product.price}</td>
-                                            <td><input type="number" defaultValue={product.min_qty} className="qty-input" />{ }</td>
-                                            <td>$ {(product.price * product.min_qty).toFixed(2)}</td>
-                                            <td><i className="fa fa-check update-btn" onClick={() => { updateCart(product) }}></i></td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    defaultValue={product.quantity}
+                                                    className="qty-input"
+                                                    onChange={(e) => {
+                                                        const newValue = e.target.value;
+                                                        setUpdateQty(newValue !== product.quantity ? newValue : product.quantity);
+                                                    }}
+                                                />
+                                            </td>
+                                            <td>$ {(product.total).toFixed(2)}</td>
+                                            <td><i className="fa fa-check update-btn" onClick={() => {
+                                                sessionStorage.getItem('token') ? updatedCart(product) : updateCart(product);
+                                            }} style={{
+                                                cursor: 'pointer'
+                                            }}></i></td>
                                         </tr>
                                     ))
                                 }
@@ -98,7 +199,7 @@ const Cart = () => {
                     <table>
                         <tr>
                             <td>Cart Subtotal</td>
-                            <td>$ {totalPrice()}</td>
+                            <td>$ {sessionStorage.getItem('token') ? subTotal : totalPrice()}</td>
                         </tr>
                         <tr>
                             <td>Coupon {"(to be edited..)"}</td>
@@ -106,7 +207,7 @@ const Cart = () => {
                         </tr>
                         <tr>
                             <td><strong>Total</strong></td>
-                            <td><strong>$ {totalPrice()}</strong></td>
+                            <td><strong>$ {sessionStorage.getItem('token') ? subTotal : totalPrice()}</strong></td>
                         </tr>
                     </table>
                     <button className='normal'>Proceed to Checkout</button>

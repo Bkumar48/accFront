@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Header from './components/common/Header';
 import HomeLayout from './components/homepage/HomeLayout';
 import Shop from './components/pages/Shop';
@@ -11,26 +11,41 @@ import Blog from './components/pages/Blog';
 import About from './components/pages/About';
 import Contact from './components/pages/Contact';
 import Cart from './components/pages/Cart';
+import LoginSignup from './components/pages/LoginSignup';
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   return (
     <div className="App">
-      <Router>
-        <Header />
-        <Routes>
-          <Route path='/' element={<HomeLayout/>} />
-          <Route path='/shop' element={<Shop/>} />
-          <Route path='/product/:id' element={<Sproduct/>} />
-          <Route path='/blog' element={<Blog/>} />
-          <Route path='/about' element={<About/>} />
-          <Route path='/contact' element={<Contact/>} />
-          <Route path='/cart' element={<Cart/>} />
-        </Routes>
-        <NewsLetter />
-        <Footer />
-      </Router>
+      <BrowserRouter>
+        <AppRoutes />
+        <Toaster />
+      </BrowserRouter>
     </div>
   );
 }
 
-export default App;
+const AppRoutes = () => {
+  const location = useLocation();
+  const shouldShowHeaderFooter = location.pathname !== '/login';
 
+  return (
+    <>
+      {shouldShowHeaderFooter && <Header />}
+      <Routes>
+        <Route path="/login" element={<LoginSignup />} />
+        <Route path="/" element={<HomeLayout />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/product/:id" element={<Sproduct />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/cart" element={<Cart />} />
+      </Routes>
+      {shouldShowHeaderFooter && <NewsLetter />}
+      {shouldShowHeaderFooter && <Footer />}
+    </>
+  );
+};
+
+export default App;
