@@ -38,6 +38,7 @@ const FeaturedProducts = () => {
         try {
             const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/allProduct?categoryId=&productId=&maincateId=&search=gmail&limit&skip`)
             setProducts(res.data.proData)
+            console.log(res.data.proData)
             setLoading(false)
             setSuccess(true)
         } catch (error) {
@@ -57,6 +58,7 @@ const FeaturedProducts = () => {
         sessionStorage.setItem('cart', JSON.stringify(cart));
     }
 
+    
 
     return (
         <section id="product1" className='section-p1'>
@@ -66,7 +68,7 @@ const FeaturedProducts = () => {
                 {
                     products.map((product) => (
                         <div className='pro' key={product.Id}>
-                            <img src={product.image} alt="product" />
+                            <img src={`https://demo.adaired.com/nodeapi/upload/product/${product.image}`} alt="product" />
                             <div className='des'>
                                 <span>{product.type}</span>
                                 <h4>{product.banner_title}</h4>

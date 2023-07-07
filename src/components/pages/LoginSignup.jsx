@@ -9,11 +9,24 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const LoginSignup = () => {
     const navigate = useNavigate();
-    const [name, setName] = useState('');
+    const [isSignUpMode, setIsSignUpMode] = useState(false);
+    const handleToggle = () => {
+        setIsSignUpMode(!isSignUpMode);
+    };
+
+    // signin states=====================>
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+
+    // signup states=====================>
+    const [name, setName] = useState('');
+    const [email1, setEmail1] = useState('');
+    const [password1, setPassword1] = useState('');
     const [confirmpass, setConfirmpass] = useState('');
     const [mobile, setMobile] = useState('');
+
+    // common states=====================>
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -23,25 +36,6 @@ const LoginSignup = () => {
         const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
         const token = sessionStorage.getItem('token');
         if (token) {
-            // cart.forEach(async (item) => {
-            //     try {
-            //         const { data } = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/addCart`, {
-            //             productId: item.Id,
-            //             qty: item.min_qty,
-            //         }, {
-            //             headers: {
-            //                 Authorization: `Bearer ${token}`,
-            //             },
-            //         });
-            //         console.log(data);
-            //     } catch (error) {
-            //         console.log(error);
-            //     }
-
-            //     console.log(item)
-            // });
-
-
             const items = [];
             cart.forEach((item) => {
                 items.push({
@@ -63,8 +57,8 @@ const LoginSignup = () => {
                             },
                         }
                     );
-                    console.log(data);
                 }
+                sessionStorage.removeItem('cart');
             } catch (error) {
                 console.log(error);
             }
@@ -76,6 +70,7 @@ const LoginSignup = () => {
     const lastName = name.split(' ')[1];
     const signupHandler = async (e) => {
         try {
+            e.preventDefault();
             const config = {
                 headers: {
                     "Content-Type": "application/json",
@@ -87,9 +82,9 @@ const LoginSignup = () => {
             const { data } = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/v1/user/register`, {
                 first_name: firstName,
                 last_name: lastName,
-                email: email,
-                password: password,
+                email: email1,
                 contact: mobile,
+                password: password1,
                 cpassword: confirmpass,
             },
                 config);
@@ -97,38 +92,24 @@ const LoginSignup = () => {
             setSuccess(data.message);
             console.log(data)
             setName('');
-            setEmail('');
-            setPassword('');
+            setEmail1('');
+            setPassword1('');
             setConfirmpass('');
             setMobile('');
-            toast.success("Registered Successfully", {
+            toast.success("Registered Successfully, Login to continue", {
                 position: "top-center",
-                style: {
-                    borderRadius: '10px',
-                    background: '#333',
-                    color: '#fff',
-                },
-                iconTheme: {
-                    primary: '#fff',
-                    secondary: '#333',
-                },
+                // iconTheme: {
+                //     primary: '#fff',
+                //     secondary: '#333',
+                // },
+
             });
             navigate('/login');
-            toast.success("Login to continue", {
-                position: "top-center",
-                style: {
-                    borderRadius: '10px',
-                    background: '#333',
-                    color: '#fff',
-                },
-                iconTheme: {
-                    primary: '#fff',
-                    secondary: '#333',
-                },
-            });
+            setIsSignUpMode(false);
         } catch (error) {
             setLoading(false);
             setError(error.response.data.message);
+            console.log(error.response.data.massage)
         }
     }
 
@@ -149,15 +130,15 @@ const LoginSignup = () => {
             setPassword('');
             toast.success("Login Successfully", {
                 position: "top-center",
-                style: {
-                    borderRadius: '10px',
-                    background: '#333',
-                    color: '#fff',
-                },
-                iconTheme: {
-                    primary: '#fff',
-                    secondary: '#333',
-                },
+                // style: {
+                //     borderRadius: '10px',
+                //     background: '#333',
+                //     color: '#fff',
+                // },
+                // iconTheme: {
+                //     primary: '#fff',
+                //     secondary: '#333',
+                // },
             });
             navigate('/');
             addCart();
@@ -192,16 +173,24 @@ const LoginSignup = () => {
             };
         });
 
+        let currentImage = document.querySelector(`.img-1`);
+        currentImage.classList.add("show");
+
         const moveSlider = (index) => {
+
+            const actualIndex = index + 1;
+
             bullets.forEach(bullet => {
                 bullet.classList.remove('active');
             });
+
 
             images.forEach(image => {
                 image.classList.remove('show');
             });
 
-            textSlider.style.transform = `translateY(${-(index + 1 - 1) * 2.2}rem)`;
+
+            textSlider.style.transform = `translateY(${-(actualIndex - 1) * 2.2}rem)`;
 
             bullets[index].classList.add('active');
             images[index].classList.add('show');
@@ -214,12 +203,6 @@ const LoginSignup = () => {
         });
 
     }, []);
-
-    const [isSignUpMode, setIsSignUpMode] = useState(false);
-
-    const handleToggle = () => {
-        setIsSignUpMode(!isSignUpMode);
-    };
 
     // Slider=====================
 
@@ -298,7 +281,7 @@ const LoginSignup = () => {
 
                         {/* Signup Form */}
 
-                        <form action="" className="sign-up-form" autoComplete='off' onSubmit={signupHandler}>
+                        <form action="" className="sign-up-form" autoComplete='off'>
                             <div className="logo">
                                 <img src={logo} alt="" className='logo-img' />
                             </div>
@@ -318,8 +301,8 @@ const LoginSignup = () => {
                                 </div>
 
                                 <div className="input-wrap">
-                                    <input type="email" className='input-field' autoComplete='off' required value={email} onChange={(e) => {
-                                        setEmail(e.target.value);
+                                    <input type="email" className='input-field' autoComplete='off' required value={email1} onChange={(e) => {
+                                        setEmail1(e.target.value);
                                     }} />
                                     <label>Email</label>
                                 </div>
@@ -331,8 +314,8 @@ const LoginSignup = () => {
                                 </div>
 
                                 <div className="input-wrap">
-                                    <input type="password" minLength={4} className='input-field' autoComplete='off' required value={password} onChange={(e) => {
-                                        setPassword(e.target.value);
+                                    <input type="password" minLength={4} className='input-field' autoComplete='off' required value={password1} onChange={(e) => {
+                                        setPassword1(e.target.value);
                                     }} />
                                     <label>Password</label>
                                 </div>
@@ -343,7 +326,7 @@ const LoginSignup = () => {
                                     <label>Confirm Password</label>
                                 </div>
 
-                                <input type="submit" value="Sign Up" className='sign-btn' />
+                                <input type="submit" value="Sign Up" className='sign-btn' onClick={signupHandler} />
                                 <p className='text'>By signing up, I agree to the <Link to="#">Terms of Services</Link> and <Link to="#">Privacy Policy</Link></p>
                             </div>
                         </form>

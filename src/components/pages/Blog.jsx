@@ -52,7 +52,8 @@ const Blog = () => {
                             width="96"
                             visible={true}
 
-                        /></div>
+                        />
+                    </div>
                 </section>) : (
                 <><section id="blog">
                     {
@@ -71,15 +72,15 @@ const Blog = () => {
                         ))
                     }
                 </section>
-                    <section id="pagination" className="section-p1">
-                        <Link to="#" className="btn">1</Link>
-                        <Link to="#" className="btn">2</Link>
-                        <Link to="#" className="btn"><i class="fa fa-long-arrow-alt-right"></i></Link>
-                    </section>
+
                 </>
 
             )}
-
+            <section id="pagination" className="section-p1">
+                <Link to="#" className="btn">1</Link>
+                <Link to="#" className="btn">2</Link>
+                <Link to="#" className="btn"><i class="fa fa-long-arrow-alt-right"></i></Link>
+            </section>
         </>
     )
 }

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
-import { productCount } from '../common/Header';
-
+import { cart } from '../common/Header';
+import { RotatingLines } from 'react-loader-spinner'
 
 const Shop = () => {
     const navigate = useNavigate()
@@ -42,12 +42,12 @@ const Shop = () => {
                     sessionStorage.setItem('cart', JSON.stringify(cart));
                 }
             }
-            productCount();
+            cart();
         }
         else {
             cart.push(product);
             sessionStorage.setItem('cart', JSON.stringify(cart));
-            
+
         }
     }
 
@@ -76,10 +76,10 @@ const Shop = () => {
         }
     };
 
-   
-    
-        
-    
+
+
+
+
 
     return (
         <>
@@ -87,36 +87,50 @@ const Shop = () => {
                 <h2>#stayhome</h2>
                 <p>Save more with coupons & up to 30% off! </p>
             </section>
-            <section id="product1" className='section-p1'>
-                <div className='pro-container'>
-                    {
-                        products.map((product) => (
-                            <div className='pro' key={product.Id} >
-                                <img src={product.image} alt="product" onClick={() => {
-                                    navigate(`/product/${product.Id}`)
-                                }} />
-                                <div className='des'>
-                                    <span>{product.type}</span>
-                                    <h4>{product.banner_title}</h4>
-                                    <div className='star'>
-                                        <i className='fa fa-star'></i>
-                                        <i className='fa fa-star'></i>
-                                        <i className='fa fa-star'></i>
-                                        <i className='fa fa-star'></i>
-                                        <i className='fa fa-star'></i>
-                                        {/* <i className='fa fa-star-half-o'></i> */}
-                                    </div>
-                                    <h4><span>Price:</span> $ {product.price}</h4>
-                                </div>
-                                <Link to='#' className='btn'><i class="fa-solid fa-cart-shopping cart" onClick={() => {
-                                   sessionStorage.getItem('token') ? addCart(product) : addToCart(product)
-                                }}></i></Link>
-                            </div>
-                        ))
-                    }
+            {
+                loading ? (
+                    <section id="product1" className='section-p1'>
 
-                </div>
-            </section>
+                        <div id='loader'>
+                            <lottie-player src="https://assets7.lottiefiles.com/packages/lf20_rlbhauvj.json" background="transparent" speed="2.5" style={{
+                                width: '500px',
+                                height: '500px',
+                            }} loop autoplay></lottie-player>
+                        </div>
+                    </section>
+                ) : (
+                    <section id="product1" className='section-p1'>
+                        <div className='pro-container'>
+                            {
+                                products.map((product) => (
+                                    <div className='pro' key={product.Id} >
+                                        <img src={product.image} alt="product" onClick={() => {
+                                            navigate(`/product/${product.Id}`)
+                                        }} />
+                                        <div className='des'>
+                                            <span>{product.type}</span>
+                                            <h4>{product.banner_title}</h4>
+                                            <div className='star'>
+                                                <i className='fa fa-star'></i>
+                                                <i className='fa fa-star'></i>
+                                                <i className='fa fa-star'></i>
+                                                <i className='fa fa-star'></i>
+                                                <i className='fa fa-star'></i>
+                                                {/* <i className='fa fa-star-half-o'></i> */}
+                                            </div>
+                                            <h4><span>Price:</span> $ {product.price}</h4>
+                                        </div>
+                                        <Link to='#' className='btn'><i class="fa-solid fa-cart-shopping cart" onClick={() => {
+                                            sessionStorage.getItem('token') ? addCart(product) : addToCart(product)
+                                        }}></i></Link>
+                                    </div>
+                                ))
+                            }
+
+                        </div>
+                    </section>
+                )
+            }
             <section id="pagination" className="section-p1">
                 <Link to="#" className="btn">1</Link>
                 <Link to="#" className="btn">2</Link>
