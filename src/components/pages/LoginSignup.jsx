@@ -5,7 +5,7 @@ import image2 from '../assest/LoginRegister/image2.png';
 import image3 from '../assest/LoginRegister/image3.png';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const LoginSignup = () => {
     const navigate = useNavigate();
@@ -98,11 +98,6 @@ const LoginSignup = () => {
             setMobile('');
             toast.success("Registered Successfully, Login to continue", {
                 position: "top-center",
-                // iconTheme: {
-                //     primary: '#fff',
-                //     secondary: '#333',
-                // },
-
             });
             navigate('/login');
             setIsSignUpMode(false);
@@ -122,7 +117,6 @@ const LoginSignup = () => {
                 email: email,
                 password: password,
             });
-            setLoading(false);
             setSuccess(data.massage);
             const token = data.token;
             sessionStorage.setItem('token', token);
@@ -130,21 +124,13 @@ const LoginSignup = () => {
             setPassword('');
             toast.success("Login Successfully", {
                 position: "top-center",
-                // style: {
-                //     borderRadius: '10px',
-                //     background: '#333',
-                //     color: '#fff',
-                // },
-                // iconTheme: {
-                //     primary: '#fff',
-                //     secondary: '#333',
-                // },
             });
             navigate('/');
             addCart();
+            setLoading(false);
         } catch (error) {
             setLoading(false);
-            setError(error.response.data.message);
+            setError(error.response.data.massage);
         }
     }
 
@@ -247,7 +233,13 @@ const LoginSignup = () => {
 
     // ===========================
     return (<>
-        <section id='login' className={isSignUpMode ? 'sign-up-mode' : ''}>
+
+        {
+            loading && <div className="loader-container">
+                <h1 className="loader">Loading...</h1>
+            </div>
+        }
+        <section id='login' className={`${isSignUpMode ? 'sign-up-mode' : ''}${loading ? 'blur' : ''}`}>
             <div className="box">
                 <div className="inner-box">
                     <div className="forms-wrap">

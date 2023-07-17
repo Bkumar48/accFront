@@ -38,7 +38,6 @@ const FeaturedProducts = () => {
         try {
             const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/allProduct?categoryId=&productId=&maincateId=&search=gmail&limit&skip`)
             setProducts(res.data.proData)
-            console.log(res.data.proData)
             setLoading(false)
             setSuccess(true)
         } catch (error) {

@@ -24,7 +24,7 @@ const Cart = () => {
                 setCart(data.data.items);
             } catch (error) {
                 setLoading(false);
-                console.error(error);
+                // console.error(error.response.data.msg);
                 setCart([]);
             }
         }
@@ -36,9 +36,8 @@ const Cart = () => {
         const id = product.productId._id;
         if (token) {
             try {
-                // Show the loading animation
-                toast.loading('Removing from cart...', {
-                    duration: 1200,
+                toast.loading('Removing from cart...',{
+                    duration: 1000
                 });
                 const { data } = await axios.delete(
                     `${process.env.REACT_APP_BASE_URL}/api/v1/cart/remProductCart`,
@@ -51,20 +50,8 @@ const Cart = () => {
                         },
                     }
                 );
-
-                // Hide the loading animation after a delay to simulate response time
-                toast.success('Removed from cart!', {
-                    duration: 1000,
-                    style: {
-                        borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
-                    },
-                    iconTheme: {
-                        primary: '#fff',
-                        secondary: '#333',
-                    },
-                });
+                setLoading(false);
+                toast.success('Removed from cart');
                 const newCart = cart.filter((item) => item.productId._id !== product.productId._id);
                 setCart(newCart);
             } catch (error) {
@@ -73,6 +60,34 @@ const Cart = () => {
         }
     };
 
+    // update cart items in database---------------------------------------------
+    const updatedCart = async (product) => {
+        const token = sessionStorage.getItem('token');
+        if (token) {
+            try {
+                const { data } = await axios.put(
+                    `${process.env.REACT_APP_BASE_URL}/api/v1/cart/updateQty/`,
+                    {
+                        cartproductId: product._id,
+                        qty: updateQty
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                // console.log(data.data.items);
+                setCart(data.data.items);
+                // fetchCart();
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    };
+
+    // Get cart items from session storage---------------------------------------------
     useEffect(() => {
         sessionStorage.getItem('token') ? fetchCart() : setCart(sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : []);
     }, [])
@@ -81,13 +96,13 @@ const Cart = () => {
     // Session storage cart Section---------------------------------------------
     const totalPrice = () => {
         let total = 0;
-        cart.forEach((product) => {
-            // total += product.price * product.min_qty;
-            sessionStorage.getItem('token') ? total += product.price * product.quantity : total += product.price * product.min_qty;
-        })
+        for (let i = 0; i < cart.length; i++) {
+            sessionStorage.getItem('token') ? total += cart[i].price * cart[i].quantity : total += cart[i].price * cart[i].min_qty;
+        }
         return total;
     }
 
+    // Remove from cart session storage
     const removeFromCart = (product) => {
         const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
         const newCart = cart.filter((item) => item.Id !== product.Id);
@@ -95,6 +110,7 @@ const Cart = () => {
         setCart(newCart);
     }
 
+    // Update cart session storage
     const updateCart = (product) => {
         const productId = product.Id;
         const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
@@ -109,37 +125,21 @@ const Cart = () => {
             }
         }
     }
-    // update cart items in database---------------------------------------------
-    const updatedCart = async (product) => {
-        const token = sessionStorage.getItem('token');
-        if (token) {
-            try {
-                const { data } = await axios.put(
-                    `${process.env.REACT_APP_BASE_URL}/api/v1/cart/updateQty/`,
-                    {
-                        cartproductId: product.Id,
-                        qty: updateQty
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                setCart(data.data.items);
-                fetchCart();
-            } catch (error) {
-                console.log(error);
-            }
+
+    // Discount Calculation
+    const discount = () => {
+        let discount = 0;
+        for (let i = 0; i < cart.length; i++) {
+            sessionStorage.getItem('token') ? discount += cart[i].discountPrice * cart[i].quantity : discount += cart[i].price * cart[i].min_qty;
         }
-    };
+        return discount;
+    }
 
     return (
         <>
             <section id="page-header" className='blog-header'>
                 <h2>#cart</h2>
-                <p>Read all case studies about our products</p>
+                <p>Manage your products</p>
             </section>
 
             {
@@ -178,7 +178,7 @@ const Cart = () => {
                                     <tbody>
                                         {
                                             cart.map((product) => (
-                                                <tr key={product.Id}>
+                                                <tr key={product._id}>
                                                     <td><i className="fa fa-times" onClick={() => {
                                                         sessionStorage.getItem('token') ? removeCart(product) : removeFromCart(product);
                                                     }} style={{
@@ -253,7 +253,7 @@ const Cart = () => {
                                 <tbody>
                                     {
                                         cart.map((product) => (
-                                            <tr key={product.Id}>
+                                            <tr key={product._id}>
                                                 <td><i className="fa fa-times" onClick={() => {
                                                     sessionStorage.getItem('token') ? removeCart(product) : removeFromCart(product);
                                                 }} style={{
@@ -270,13 +270,14 @@ const Cart = () => {
                                                 <td>
                                                     <input
                                                         type="number"
-                                                        defaultValue={
-                                                            sessionStorage.getItem('token') ? product.quantity : product.min_qty
-                                                        }
+                                                        defaultValue={sessionStorage.getItem('token') ? product.quantity : product.min_qty}
                                                         className="qty-input"
+                                                        min={sessionStorage.getItem('token') ? product.quantity : product.min_qty}
                                                         onChange={(e) => {
-                                                            const newValue = e.target.value;
-                                                            setUpdateQty(newValue !== product.quantity ? newValue : product.quantity);
+                                                            const newValue = parseInt(e.target.value);
+                                                            const minValue = sessionStorage.getItem('token') ? product.quantity : product.min_qty;
+                                                            const updatedValue = newValue >= minValue ? newValue : toast.error('Minimum quantity is ' + minValue);
+                                                            setUpdateQty(updatedValue);
                                                         }}
                                                     />
                                                 </td>
@@ -285,6 +286,7 @@ const Cart = () => {
                                                 }</td>
                                                 <td><i className="fa fa-check update-btn" onClick={() => {
                                                     sessionStorage.getItem('token') ? updatedCart(product) : updateCart(product);
+
                                                 }} style={{
                                                     cursor: 'pointer'
                                                 }}></i></td>
@@ -321,18 +323,20 @@ const Cart = () => {
                 <div id='subtotal'>
                     <h3> Cart Subtotal</h3>
                     <table>
-                        <tr>
-                            <td>Cart Subtotal</td>
-                            <td>$ {totalPrice()}</td>
-                        </tr>
-                        <tr>
-                            <td>Coupon {"(to be edited..)"}</td>
-                            <td>$ {"(to be calculated..)"}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Total</strong></td>
-                            <td><strong>$ {totalPrice()}</strong></td>
-                        </tr>
+                        <tbody>
+                            <tr>
+                                <td>Cart Subtotal</td>
+                                <td>$ {totalPrice()}</td>
+                            </tr>
+                            <tr>
+                                <td>Discount</td>
+                                <td>$ {discount()}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong>$ {totalPrice()}</strong></td>
+                            </tr>
+                        </tbody>
                     </table>
                     <button className='normal'>Proceed to Checkout</button>
                 </div>

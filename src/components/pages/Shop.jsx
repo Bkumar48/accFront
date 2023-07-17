@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
-import { cart } from '../common/Header';
-import { RotatingLines } from 'react-loader-spinner'
-
+import toast from 'react-hot-toast';
 const Shop = () => {
     const navigate = useNavigate()
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState(false)
+    const [cartItems, setCartItems] = useState([])
 
+    // fetch all products
     const fetchProducts = async () => {
         setLoading(true)
         try {
@@ -25,10 +25,41 @@ const Shop = () => {
         }
     }
 
+    // fetch products on page load
     useEffect(() => {
         fetchProducts()
     }, [])
 
+    // get cart from database if the user is logged in
+    const fetchCart = async () => {
+        const token = sessionStorage.getItem('token');
+        if (token) {
+            try {
+                setLoading(true);
+                const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                setCartItems(data.data.items);
+                setLoading(false);
+            } catch (error) {
+                setLoading(false);
+                if (error.response.data.msg !== 'Cart not Found') {
+                    console.log(error.response.data.msg);
+                }
+                setCartItems([]);
+            }
+        }
+    }
+
+    // fetch cart on page load
+    useEffect(() => {
+        fetchCart();
+    }, [sessionStorage.getItem('token')]);
+
+    // Add to cart if not logged in
     const addToCart = (product) => {
         const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
         const existingProduct = cart.find((item) => item.Id === product.Id);
@@ -42,7 +73,6 @@ const Shop = () => {
                     sessionStorage.setItem('cart', JSON.stringify(cart));
                 }
             }
-            cart();
         }
         else {
             cart.push(product);
@@ -55,31 +85,53 @@ const Shop = () => {
     const addCart = async (product) => {
         const token = sessionStorage.getItem('token');
         if (token) {
-            try {
-                const { data } = await axios.post(
-                    `${process.env.REACT_APP_BASE_URL}/api/v1/cart/addCart`,
-                    {
-                        productId: product.Id,
-                        qty: product.min_qty
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json',
+            const existingProduct = cartItems.find((item) => item.productId._id === product.Id);
+            const Quantity = product.min_qty;
+            if (existingProduct) {
+                alert('Product already in cart');
+                // try {
+                //     const { data } = await axios.put(
+                //         `${process.env.REACT_APP_BASE_URL}/api/v1/cart/updateQty/`,
+                //         {
+                //             cartproductId: product._id,
+                //             qty: Quantity + existingProduct.quantity,
+                //         },
+                //         {
+                //             headers: {
+                //                 Authorization: `Bearer ${token}`,
+                //                 'Content-Type': 'application/json',
+                //             },
+                //         }
+                //     );
+                //     setCartItems(data.data.items);
+                // } catch (error) {
+                //     console.log(error);
+                // }
+            }
+            else {
+                try {
+                    const { data } = await axios.post(
+                        `${process.env.REACT_APP_BASE_URL}/api/v1/cart/addCart`,
+                        {
+                            productId: product.Id,
+                            qty: product.min_qty
                         },
-                    }
-                );
-                console.log(data);
-            } catch (error) {
-                console.log(error);
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+                    setCartItems(data.data.items);  
+                    // toast.success('Product added to cart');
+                } catch (error) {
+                    console.log(error);
+                }
+
             }
         }
     };
-
-
-
-
-
 
     return (
         <>
@@ -139,6 +191,5 @@ const Shop = () => {
         </>
     )
 }
-
 
 export default Shop
