@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
-import toast from 'react-hot-toast';
 const Shop = () => {
     const navigate = useNavigate()
     const [products, setProducts] = useState([])
@@ -9,6 +8,7 @@ const Shop = () => {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState(false)
     const [cartItems, setCartItems] = useState([])
+    const token = sessionStorage.getItem('token');
 
     // fetch all products
     const fetchProducts = async () => {
@@ -57,7 +57,7 @@ const Shop = () => {
     // fetch cart on page load
     useEffect(() => {
         fetchCart();
-    }, [sessionStorage.getItem('token')]);
+    }, [token]);
 
     // Add to cart if not logged in
     const addToCart = (product) => {
@@ -124,7 +124,6 @@ const Shop = () => {
                         }
                     );
                     setCartItems(data.data.items);  
-                    // toast.success('Product added to cart');
                 } catch (error) {
                     console.log(error);
                 }

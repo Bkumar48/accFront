@@ -13,7 +13,7 @@ const Header = () => {
 
   const handleclick = () => {
     const token = sessionStorage.getItem('token');
-    window.open(`http://localhost:3000?token=${token}`, "_self");
+    window.open(`http://localhost:3001?token=${token}`, "_self");
   }
 
   const productCount = () => {

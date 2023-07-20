@@ -36,7 +36,7 @@ const Cart = () => {
         const id = product.productId._id;
         if (token) {
             try {
-                toast.loading('Removing from cart...',{
+                toast.loading('Removing from cart...', {
                     duration: 1000
                 });
                 const { data } = await axios.delete(
