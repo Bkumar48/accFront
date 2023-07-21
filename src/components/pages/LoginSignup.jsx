@@ -6,6 +6,7 @@ import image3 from '../assest/LoginRegister/image3.png';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import Cookies from 'js-cookie'; // Import the js-cookie library
 
 const LoginSignup = () => {
     const navigate = useNavigate();
@@ -119,7 +120,10 @@ const LoginSignup = () => {
             });
             setSuccess(data.massage);
             const token = data.token;
-            sessionStorage.setItem('token', token);
+            
+            // Store token in cookies
+            Cookies.set('token', token, { expires: 7 }); // Token will expire after 7 days
+
             setEmail('');
             setPassword('');
             toast.success("Login Successfully", {

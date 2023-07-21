@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import Cookies from 'js-cookie';
 
 const Cart = () => {
     const [cart, setCart] = useState([])
     const [updateQty, setUpdateQty] = useState(0)
     const [loading, setLoading] = useState(false)
-
+    const token = Cookies.get('token');
 
     // Get cart items from database---------------------------------------------
     const fetchCart = async () => {
-        const token = sessionStorage.getItem('token');
         if (token) {
             try {
                 setLoading(true);
@@ -22,6 +22,7 @@ const Cart = () => {
                 });
                 setLoading(false);
                 setCart(data.data.items);
+                console.log(data.data.items)
             } catch (error) {
                 setLoading(false);
                 // console.error(error.response.data.msg);
@@ -32,12 +33,11 @@ const Cart = () => {
 
     // remove cart items from database---------------------------------------------
     const removeCart = async (product) => {
-        const token = sessionStorage.getItem('token');
         const id = product.productId._id;
         if (token) {
             try {
                 toast.loading('Removing from cart...', {
-                    duration: 1000
+                    autClose: false,
                 });
                 const { data } = await axios.delete(
                     `${process.env.REACT_APP_BASE_URL}/api/v1/cart/remProductCart`,
@@ -51,6 +51,7 @@ const Cart = () => {
                     }
                 );
                 setLoading(false);
+                toast.dismiss();
                 toast.success('Removed from cart');
                 const newCart = cart.filter((item) => item.productId._id !== product.productId._id);
                 setCart(newCart);
@@ -62,7 +63,6 @@ const Cart = () => {
 
     // update cart items in database---------------------------------------------
     const updatedCart = async (product) => {
-        const token = sessionStorage.getItem('token');
         if (token) {
             try {
                 const { data } = await axios.put(
@@ -89,7 +89,7 @@ const Cart = () => {
 
     // Get cart items from session storage---------------------------------------------
     useEffect(() => {
-        sessionStorage.getItem('token') ? fetchCart() : setCart(sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : []);
+        Cookies.get('token') ? fetchCart() : setCart(sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : []);
     }, [])
 
 
@@ -97,7 +97,7 @@ const Cart = () => {
     const totalPrice = () => {
         let total = 0;
         for (let i = 0; i < cart.length; i++) {
-            sessionStorage.getItem('token') ? total += cart[i].price * cart[i].quantity : total += cart[i].price * cart[i].min_qty;
+            Cookies.get('token') ? total += cart[i].price * cart[i].quantity : total += cart[i].price * cart[i].min_qty;
         }
         return total;
     }
@@ -130,7 +130,7 @@ const Cart = () => {
     const discount = () => {
         let discount = 0;
         for (let i = 0; i < cart.length; i++) {
-            sessionStorage.getItem('token') ? discount += cart[i].discountPrice * cart[i].quantity : discount += cart[i].price * cart[i].min_qty;
+            Cookies.get('token') ? discount += cart[i].discountPrice * cart[i].quantity : discount += cart[i].price * cart[i].min_qty;
         }
         return discount;
     }
@@ -143,7 +143,7 @@ const Cart = () => {
             </section>
 
             {
-                sessionStorage.getItem('token') ? (
+                Cookies.get('token') ? (
                     loading ? (
                         <section id='cart' className='section-p1'>
                             <div style={{
@@ -180,23 +180,23 @@ const Cart = () => {
                                             cart.map((product) => (
                                                 <tr key={product._id}>
                                                     <td><i className="fa fa-times" onClick={() => {
-                                                        sessionStorage.getItem('token') ? removeCart(product) : removeFromCart(product);
+                                                        Cookies.get('token') ? removeCart(product) : removeFromCart(product);
                                                     }} style={{
                                                         cursor: 'pointer',
                                                         color: '#088178'
                                                     }}></i></td>
                                                     <td><img src={
-                                                        sessionStorage.getItem('token') ? product.productId.productImage : product.productImage
+                                                        Cookies.get('token') ? product.productId.productImage : product.productImage
                                                     } alt="" /></td>
                                                     <td>{
-                                                        sessionStorage.getItem('token') ? product.productTile : product.banner_title
+                                                        Cookies.get('token') ? product.productTile : product.banner_title
                                                     }</td>
                                                     <td>$ {product.price}</td>
                                                     <td>
                                                         <input
                                                             type="number"
                                                             defaultValue={
-                                                                sessionStorage.getItem('token') ? product.quantity : product.min_qty
+                                                                Cookies.get('token') ? product.quantity : product.min_qty
                                                             }
                                                             className="qty-input"
                                                             onChange={(e) => {
@@ -206,10 +206,10 @@ const Cart = () => {
                                                         />
                                                     </td>
                                                     <td>$ {
-                                                        sessionStorage.getItem('token') ? (product.price * product.quantity).toFixed(2) : (product.price * product.min_qty).toFixed(2)
+                                                        Cookies.get('token') ? (product.price * product.quantity).toFixed(2) : (product.price * product.min_qty).toFixed(2)
                                                     }</td>
                                                     <td><i className="fa fa-check update-btn" onClick={() => {
-                                                        sessionStorage.getItem('token') ? updatedCart(product) : updateCart(product);
+                                                        Cookies.get('token') ? updatedCart(product) : updateCart(product);
                                                     }} style={{
                                                         cursor: 'pointer'
                                                     }}></i></td>
@@ -255,37 +255,37 @@ const Cart = () => {
                                         cart.map((product) => (
                                             <tr key={product._id}>
                                                 <td><i className="fa fa-times" onClick={() => {
-                                                    sessionStorage.getItem('token') ? removeCart(product) : removeFromCart(product);
+                                                    Cookies.get('token') ? removeCart(product) : removeFromCart(product);
                                                 }} style={{
                                                     cursor: 'pointer',
                                                     color: '#088178'
                                                 }}></i></td>
                                                 <td><img src={
-                                                    sessionStorage.getItem('token') ? product.productId.productImage : product.productImage
+                                                    Cookies.get('token') ? product.productId.productImage : product.productImage
                                                 } alt="" /></td>
                                                 <td>{
-                                                    sessionStorage.getItem('token') ? product.productTile : product.banner_title
+                                                    Cookies.get('token') ? product.productTile : product.banner_title
                                                 }</td>
                                                 <td>$ {product.price}</td>
                                                 <td>
                                                     <input
                                                         type="number"
-                                                        defaultValue={sessionStorage.getItem('token') ? product.quantity : product.min_qty}
+                                                        defaultValue={Cookies.get('token') ? product.quantity : product.min_qty}
                                                         className="qty-input"
-                                                        min={sessionStorage.getItem('token') ? product.quantity : product.min_qty}
+                                                        min={Cookies.get('token') ? product.quantity : product.min_qty}
                                                         onChange={(e) => {
                                                             const newValue = parseInt(e.target.value);
-                                                            const minValue = sessionStorage.getItem('token') ? product.quantity : product.min_qty;
+                                                            const minValue = Cookies.get('token') ? product.quantity : product.min_qty;
                                                             const updatedValue = newValue >= minValue ? newValue : toast.error('Minimum quantity is ' + minValue);
                                                             setUpdateQty(updatedValue);
                                                         }}
                                                     />
                                                 </td>
                                                 <td>$ {
-                                                    sessionStorage.getItem('token') ? (product.price * product.quantity).toFixed(2) : (product.price * product.min_qty).toFixed(2)
+                                                    Cookies.get('token') ? (product.price * product.quantity).toFixed(2) : (product.price * product.min_qty).toFixed(2)
                                                 }</td>
                                                 <td><i className="fa fa-check update-btn" onClick={() => {
-                                                    sessionStorage.getItem('token') ? updatedCart(product) : updateCart(product);
+                                                    Cookies.get('token') ? updatedCart(product) : updateCart(product);
 
                                                 }} style={{
                                                     cursor: 'pointer'

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
+import Cookies from 'js-cookie';
 const Shop = () => {
     const navigate = useNavigate()
     const [products, setProducts] = useState([])
@@ -8,7 +9,7 @@ const Shop = () => {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState(false)
     const [cartItems, setCartItems] = useState([])
-    const token = sessionStorage.getItem('token');
+    const token = Cookies.get('token');
 
     // fetch all products
     const fetchProducts = async () => {
@@ -32,7 +33,7 @@ const Shop = () => {
 
     // get cart from database if the user is logged in
     const fetchCart = async () => {
-        const token = sessionStorage.getItem('token');
+       const token = Cookies.get('token');
         if (token) {
             try {
                 setLoading(true);
@@ -83,7 +84,6 @@ const Shop = () => {
 
     // Add to cart if Logged in
     const addCart = async (product) => {
-        const token = sessionStorage.getItem('token');
         if (token) {
             const existingProduct = cartItems.find((item) => item.productId._id === product.Id);
             const Quantity = product.min_qty;
@@ -123,7 +123,8 @@ const Shop = () => {
                             },
                         }
                     );
-                    setCartItems(data.data.items);  
+                    setCartItems(data.data.items); 
+                    console.log(data.data.items) 
                 } catch (error) {
                     console.log(error);
                 }
@@ -172,7 +173,7 @@ const Shop = () => {
                                             <h4><span>Price:</span> $ {product.price}</h4>
                                         </div>
                                         <Link to='#' className='btn'><i class="fa-solid fa-cart-shopping cart" onClick={() => {
-                                            sessionStorage.getItem('token') ? addCart(product) : addToCart(product)
+                                           Cookies.get('token') ? addCart(product) : addToCart(product)
                                         }}></i></Link>
                                     </div>
                                 ))

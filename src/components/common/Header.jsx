@@ -3,6 +3,7 @@ import axios from 'axios';
 import logo from '../assest/header/logo.png';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import Cookies from 'js-cookie';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -10,10 +11,10 @@ const Header = () => {
   const [isNavActive, setIsNavActive] = useState(false);
   const [cartCount, setCartCount] = useState();
   const [isLoggedin, setIsLoggedin] = useState(false);
+  const token = Cookies.get('token');
 
   const handleclick = () => {
-    const token = sessionStorage.getItem('token');
-    window.open(`http://localhost:3001?token=${token}`, "_self");
+    window.open(`http://localhost:3001`, "_self");
   }
 
   const productCount = () => {
@@ -22,7 +23,7 @@ const Header = () => {
   };
 
   const cart = async () => {
-    const token = sessionStorage.getItem('token');
+    
     if (token) {
       try {
         const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
@@ -48,10 +49,10 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (sessionStorage.getItem('token')) {
+    if (Cookies.get('token')) {
       setIsLoggedin(true);
     }
-  }, [sessionStorage.getItem('token')]);
+  }, [Cookies.get('token')]);
 
 
   return (
@@ -97,7 +98,7 @@ const Header = () => {
               </li>)
               : null
           }
-          {sessionStorage.getItem('token') ? (
+          {Cookies.get('token') ? (
             <li
               className="login logout"
               onClick={() => {
@@ -115,7 +116,8 @@ const Header = () => {
                           onClick={() => toast.dismiss(t.id)}
                         >No</button>
                         <button onClick={() => {
-                          sessionStorage.removeItem('token');
+                          // sessionStorage.removeItem('token');
+                          Cookies.remove('token');
                           setIsLoggedin(false);
                           navigate('/');
                           toast.dismiss(t.id)
