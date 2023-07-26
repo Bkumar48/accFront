@@ -35,7 +35,7 @@ const LoginSignup = () => {
     // Add products from session storage to cart=====================>
     const addCart = async () => {
         const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
-        const token = sessionStorage.getItem('token');
+        const token = Cookies.get('token');
         if (token) {
             const items = [];
             cart.forEach((item) => {
@@ -120,17 +120,17 @@ const LoginSignup = () => {
             });
             setSuccess(data.massage);
             const token = data.token;
-            
+
             // Store token in cookies
-            Cookies.set('token', token, { expires: 7 }); // Token will expire after 7 days
+            Cookies.set('token', token, { expires: 1 }); // Token will expire after 1 day
 
             setEmail('');
             setPassword('');
             toast.success("Login Successfully", {
                 position: "top-center",
             });
-            navigate('/');
             addCart();
+            navigate('/');
             setLoading(false);
         } catch (error) {
             setLoading(false);

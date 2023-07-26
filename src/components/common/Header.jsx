@@ -19,41 +19,64 @@ const Header = () => {
 
   const productCount = () => {
     const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
-    return cart.length;
+    setCartCount(cart.length);
   };
 
-  const cart = async () => {
-    
-    if (token) {
-      try {
-        const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        setCartCount(data.data.items.length);
-      } catch (error) {
-        if (error.response.data.msg !== 'Cart not Found') {
-          console.log(error.response.data.msg);
-        }
-        setCartCount(0);
-      }
-    } else {
-      setCartCount(productCount());
-    }
-  };
 
-  useEffect(() => {
-    cart();
-  }, []);
+  // const cart = async () => {
+  //   if (token) {
+  //     try {
+  //       const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       });
+  //       setCartCount(data.data.items.length);
+  //     } catch (error) {
+  //       if (error.response.data.msg !== 'Cart not Found') {
+  //         console.log(error.response.data.msg);
+  //       }
+  //       setCartCount(0);
+  //     }
+  //   } else {
+  //     setCartCount(productCount());
+  //   }
+  // };
+
+  // if(token){
+  //   const cart = async () => {
+  //     try {
+  //       const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       });
+  //       setCartCount(data.data.items.length);
+  //     } catch (error) {
+  //       if (error.response.data.msg !== 'Cart not Found') {
+  //         console.log(error.response.data.msg);
+  //       }
+  //       setCartCount(0);
+  //     }
+  //   };
+  //   cart();
+  // }else{
+  //   setCartCount(productCount());
+  // }
+
+
+
+
+
+
 
   useEffect(() => {
     if (Cookies.get('token')) {
       setIsLoggedin(true);
     }
   }, [Cookies.get('token')]);
-
 
   return (
     <section id="header">

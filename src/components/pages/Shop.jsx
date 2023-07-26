@@ -33,7 +33,7 @@ const Shop = () => {
 
     // get cart from database if the user is logged in
     const fetchCart = async () => {
-       const token = Cookies.get('token');
+        const token = Cookies.get('token');
         if (token) {
             try {
                 setLoading(true);
@@ -85,50 +85,24 @@ const Shop = () => {
     // Add to cart if Logged in
     const addCart = async (product) => {
         if (token) {
-            const existingProduct = cartItems.find((item) => item.productId._id === product.Id);
-            const Quantity = product.min_qty;
-            if (existingProduct) {
-                alert('Product already in cart');
-                // try {
-                //     const { data } = await axios.put(
-                //         `${process.env.REACT_APP_BASE_URL}/api/v1/cart/updateQty/`,
-                //         {
-                //             cartproductId: product._id,
-                //             qty: Quantity + existingProduct.quantity,
-                //         },
-                //         {
-                //             headers: {
-                //                 Authorization: `Bearer ${token}`,
-                //                 'Content-Type': 'application/json',
-                //             },
-                //         }
-                //     );
-                //     setCartItems(data.data.items);
-                // } catch (error) {
-                //     console.log(error);
-                // }
-            }
-            else {
-                try {
-                    const { data } = await axios.post(
-                        `${process.env.REACT_APP_BASE_URL}/api/v1/cart/addCart`,
-                        {
-                            productId: product.Id,
-                            qty: product.min_qty
+            try {
+                const { data } = await axios.post(
+                    `${process.env.REACT_APP_BASE_URL}/api/v1/cart/addCart`,
+                    {
+                        productId: product.Id,
+                        qty: product.min_qty
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
                         },
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                                'Content-Type': 'application/json',
-                            },
-                        }
-                    );
-                    setCartItems(data.data.items); 
-                    console.log(data.data.items) 
-                } catch (error) {
-                    console.log(error);
-                }
-
+                    }
+                );
+                setCartItems(data.data.items);
+                console.log(data.data.items)
+            } catch (error) {
+                console.log(error);
             }
         }
     };
@@ -156,7 +130,7 @@ const Shop = () => {
                             {
                                 products.map((product) => (
                                     <div className='pro' key={product.Id} >
-                                        <img src={product.image} alt="product" onClick={() => {
+                                        <img src={"https://demo.adaired.com/demoadaired/upload/product/" + product.image} alt="product" onClick={() => {
                                             navigate(`/product/${product.Id}`)
                                         }} />
                                         <div className='des'>
@@ -173,7 +147,7 @@ const Shop = () => {
                                             <h4><span>Price:</span> $ {product.price}</h4>
                                         </div>
                                         <Link to='#' className='btn'><i class="fa-solid fa-cart-shopping cart" onClick={() => {
-                                           Cookies.get('token') ? addCart(product) : addToCart(product)
+                                            Cookies.get('token') ? addCart(product) : addToCart(product)
                                         }}></i></Link>
                                     </div>
                                 ))

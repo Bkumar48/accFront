@@ -43,7 +43,7 @@ const NewArrival = () => {
                 {
                     products.map((product) => (
                         <div className='pro' key={product.Id}>
-                            <img src={product.image} alt="product" />
+                            <img src={`https://demo.adaired.com/demoadaired/upload/product/${product.image}`} alt="product" />
                             <div className='des'>
                                 <span>{product.type}</span>
                                 <h4>{product.banner_title}</h4>

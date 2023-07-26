@@ -610,7 +610,7 @@ body {
 }
 
 #product1 .pro img {
-  width: 100%;
+  width: 70%;
   border-radius: 20px;
 }
 
@@ -1387,6 +1387,61 @@ footer .copyright span:hover {
 #cart table td:nth-child(7) i:active {
   transform: scale(0.90);
 }
+
+/* ----------------- */
+
+
+.payment-methods img{
+  width: 100%;
+  height: 2em;
+  margin: 1em;
+}
+
+.radiodiv{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1em;
+}
+
+.paymentMethodBox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  background-color: #f6f9fc;
+  border-radius: 10px;
+  width: 50%;
+  margin:1em;
+}
+
+.paymentMethodBox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: transform 0.3s;
+}
+
+.paymentMethodBox.selected {
+  transform: scale(1.1);
+}
+
+input[type="radio"] {
+  display: none;
+}
+
+input[type="radio"] + img {
+  filter: grayscale(80%);
+  opacity: 0.6;
+  transition: filter 0.3s, opacity 0.3s;
+}
+
+input[type="radio"]:checked + img {
+  filter: none;
+  opacity: 1;
+}
+
+
 
 /* media queries */
 

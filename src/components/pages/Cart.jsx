@@ -7,6 +7,10 @@ const Cart = () => {
     const [cart, setCart] = useState([])
     const [updateQty, setUpdateQty] = useState(0)
     const [loading, setLoading] = useState(false)
+    const [loading2, setLoading2] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const [error, setError] = useState(false)
+    const [paymentMethod, setPaymentMethod] = useState(null)
     const token = Cookies.get('token');
 
     // Get cart items from database---------------------------------------------
@@ -50,7 +54,6 @@ const Cart = () => {
                         },
                     }
                 );
-                setLoading(false);
                 toast.dismiss();
                 toast.success('Removed from cart');
                 const newCart = cart.filter((item) => item.productId._id !== product.productId._id);
@@ -87,10 +90,16 @@ const Cart = () => {
         }
     };
 
-    // Get cart items from session storage---------------------------------------------
+    // Get cart items from database---------------------------------------------
     useEffect(() => {
-        Cookies.get('token') ? fetchCart() : setCart(sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : []);
-    }, [])
+        console.log('Fetching cart data...');
+        if (token) {
+            fetchCart();
+        } else {
+            const cartFromSessionStorage = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
+            setCart(cartFromSessionStorage);
+        }
+    }, [token]);
 
 
     // Session storage cart Section---------------------------------------------
@@ -126,6 +135,24 @@ const Cart = () => {
         }
     }
 
+    // delete cart from database------------------------------------------------
+    const deleteCart = async () => {
+        if (token) {
+            try {
+                const { data } = await axios.delete(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/emptyCart/`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                setCart([]);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+
+
     // Discount Calculation
     const discount = () => {
         let discount = 0;
@@ -134,6 +161,42 @@ const Cart = () => {
         }
         return discount;
     }
+
+    // create order in database---------------------------------------------
+    const createOrder = async () => {
+        if (token) {
+            if (paymentMethod !== null) {
+                try {
+                    setLoading2(true);
+                    const { data } = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/v1/order/createOrder`, {
+                        pay_method: paymentMethod,
+                    }, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    deleteCart();
+                    setLoading2(false);
+                    setSuccess(true);
+                    setError(false);
+                } catch (error) {
+                    console.log(error);
+                }
+            } else {
+                toast.error('Please select a payment method');
+            }
+        }
+    }
+
+    const handleCreateOrder = () => {
+        toast.promise(createOrder(), {
+            loading: 'Creating order...',
+            success: 'Order created successfully',
+            error: 'Failed to create order',
+        });
+    };
+
 
     return (
         <>
@@ -185,8 +248,8 @@ const Cart = () => {
                                                         cursor: 'pointer',
                                                         color: '#088178'
                                                     }}></i></td>
-                                                    <td><img src={
-                                                        Cookies.get('token') ? product.productId.productImage : product.productImage
+                                                    <td><img src={"https://demo.adaired.com/demoadaired/upload/product/" + product.productId.image
+
                                                     } alt="" /></td>
                                                     <td>{
                                                         Cookies.get('token') ? product.productTile : product.banner_title
@@ -260,8 +323,7 @@ const Cart = () => {
                                                     cursor: 'pointer',
                                                     color: '#088178'
                                                 }}></i></td>
-                                                <td><img src={
-                                                    Cookies.get('token') ? product.productId.productImage : product.productImage
+                                                <td><img src={"https://demo.adaired.com/demoadaired/upload/product/" + product.image
                                                 } alt="" /></td>
                                                 <td>{
                                                     Cookies.get('token') ? product.productTile : product.banner_title
@@ -338,7 +400,62 @@ const Cart = () => {
                             </tr>
                         </tbody>
                     </table>
-                    <button className='normal'>Proceed to Checkout</button>
+
+                    {/* <div id="paymentMethod">
+                        <h3>Payment Method</h3>
+                        <div className='radiodiv'>
+                            <input type="radio" name='payment' id='payment1' value={2} onChange={(e) => {
+                                setPaymentMethod(e.target.value);
+                            }} />
+                           
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" alt="" />
+                        </div>
+                        <div className='radiodiv'>
+                            <input type="radio" name='payment' id='payment2' value={1} onChange={(e) => {
+                                setPaymentMethod(e.target.value);
+                            }} />
+                           
+                            <img src="https://getreviews.buzz/grb/storage/app/blog/CJqkDvSzXLnb6Fa0P43BjNh269G5aOeoNknBz2di.png" alt="" />
+                        </div>
+
+                    </div> */}
+
+                    <div className="payment-methods">
+                        <h3>Payment Method</h3>
+                        <div className='radiodiv'>
+                            <label htmlFor="razorpay" className="paymentMethodBox ">
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    id="razorpay"
+                                    value={2}
+                                    onChange={(e) => {
+                                        setPaymentMethod(e.target.value);
+                                    }
+                                    }
+                                />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" alt="Razorpay" />
+                            </label>
+
+                            <label htmlFor="bitcoin" className="paymentMethodBox ">
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    id="bitcoin"
+                                    value={1}
+                                    onChange={(e) => {
+                                        setPaymentMethod(e.target.value);
+                                    }
+                                    }
+                                />
+                                <img src="https://getreviews.buzz/grb/storage/app/blog/CJqkDvSzXLnb6Fa0P43BjNh269G5aOeoNknBz2di.png" alt="Bitcoin" />
+                            </label>
+                        </div>
+
+                    </div>
+
+
+                    <button className='normal' onClick={handleCreateOrder}>Proceed to Checkout</button>
                 </div>
             </section>
         </>

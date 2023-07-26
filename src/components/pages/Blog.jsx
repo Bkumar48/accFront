@@ -16,6 +16,7 @@ const Blog = () => {
             setLoading(true);
             const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/blogs?blogId`);
             setBlog(res.data.proData);
+            console.log(res.data.proData)
             setLoading(false);
         } catch (error) {
             console.log(error);
@@ -60,7 +61,7 @@ const Blog = () => {
                         blog.map((blog) => (
                             <div className="blog-box">
                                 <div className="blog-img">
-                                    <img src={b1} alt="blog" />
+                                    <img src={"https://demo.adaired.com/demoadaired/upload/blog/"+blog.image} alt="blog" />
                                 </div>
                                 <div className="blog-details">
                                     <h4>{blog.title}</h4>
