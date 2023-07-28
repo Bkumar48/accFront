@@ -100,7 +100,7 @@ const LoginSignup = () => {
             toast.success("Registered Successfully, Login to continue", {
                 position: "top-center",
             });
-            navigate('/login');
+            navigate('/demofront/login');
             setIsSignUpMode(false);
         } catch (error) {
             setLoading(false);
@@ -130,7 +130,7 @@ const LoginSignup = () => {
                 position: "top-center",
             });
             addCart();
-            navigate('/');
+            navigate('/demofront/');
             setLoading(false);
         } catch (error) {
             setLoading(false);

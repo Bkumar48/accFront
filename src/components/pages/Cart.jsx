@@ -198,6 +198,22 @@ const Cart = () => {
     };
 
 
+    const handleInputChange = (e, product) => {
+        const newValue = parseInt(e.target.value);
+        const minValue = Cookies.get('token') ? product.quantity : product.min_qty;
+
+        // Check if the key being pressed is "ArrowDown"
+        if (e.key === "ArrowDown" && newValue === minValue) {
+            e.preventDefault(); // Prevent the default behavior
+        } else if (newValue < minValue) {
+            // If the typed value is less than the default value, reset the value to the default value
+            setUpdateQty(minValue);
+        } else {
+            setUpdateQty(newValue); // Update the updateQty state if the value is valid
+        }
+    };
+
+
     return (
         <>
             <section id="page-header" className='blog-header'>
@@ -255,7 +271,7 @@ const Cart = () => {
                                                         Cookies.get('token') ? product.productTile : product.banner_title
                                                     }</td>
                                                     <td>$ {product.price}</td>
-                                                    <td>
+                                                    {/* <td>
                                                         <input
                                                             type="number"
                                                             defaultValue={
@@ -265,6 +281,21 @@ const Cart = () => {
                                                             onChange={(e) => {
                                                                 const newValue = e.target.value;
                                                                 setUpdateQty(newValue !== product.quantity ? newValue : product.quantity);
+                                                            }}
+                                                        />
+                                                    </td> */}
+
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            defaultValue={Cookies.get('token') ? product.quantity : product.min_qty}
+                                                            className="qty-input"
+                                                            min={Cookies.get('token') ? product.quantity : product.min_qty}
+                                                            onKeyDown={(e) => handleInputChange(e, product)}
+                                                            onChange={(e) => {
+                                                                // Allow onChange event to update the updateQty state
+                                                                // You may remove this if you don't need it
+                                                                setUpdateQty(e.target.value);
                                                             }}
                                                         />
                                                     </td>
@@ -329,7 +360,7 @@ const Cart = () => {
                                                     Cookies.get('token') ? product.productTile : product.banner_title
                                                 }</td>
                                                 <td>$ {product.price}</td>
-                                                <td>
+                                                {/* <td>
                                                     <input
                                                         type="number"
                                                         defaultValue={Cookies.get('token') ? product.quantity : product.min_qty}
@@ -340,6 +371,20 @@ const Cart = () => {
                                                             const minValue = Cookies.get('token') ? product.quantity : product.min_qty;
                                                             const updatedValue = newValue >= minValue ? newValue : toast.error('Minimum quantity is ' + minValue);
                                                             setUpdateQty(updatedValue);
+                                                        }}
+                                                    />
+                                                </td> */}
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        defaultValue={Cookies.get('token') ? product.quantity : product.min_qty}
+                                                        className="qty-input"
+                                                        min={Cookies.get('token') ? product.quantity : product.min_qty}
+                                                        onKeyDown={(e) => handleInputChange(e, product)}
+                                                        onChange={(e) => {
+                                                            // Allow onChange event to update the updateQty state
+                                                            // You may remove this if you don't need it
+                                                            setUpdateQty(e.target.value);
                                                         }}
                                                     />
                                                 </td>
@@ -401,25 +446,6 @@ const Cart = () => {
                         </tbody>
                     </table>
 
-                    {/* <div id="paymentMethod">
-                        <h3>Payment Method</h3>
-                        <div className='radiodiv'>
-                            <input type="radio" name='payment' id='payment1' value={2} onChange={(e) => {
-                                setPaymentMethod(e.target.value);
-                            }} />
-                           
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" alt="" />
-                        </div>
-                        <div className='radiodiv'>
-                            <input type="radio" name='payment' id='payment2' value={1} onChange={(e) => {
-                                setPaymentMethod(e.target.value);
-                            }} />
-                           
-                            <img src="https://getreviews.buzz/grb/storage/app/blog/CJqkDvSzXLnb6Fa0P43BjNh269G5aOeoNknBz2di.png" alt="" />
-                        </div>
-
-                    </div> */}
-
                     <div className="payment-methods">
                         <h3>Payment Method</h3>
                         <div className='radiodiv'>
@@ -455,7 +481,25 @@ const Cart = () => {
                     </div>
 
 
-                    <button className='normal' onClick={handleCreateOrder}>Proceed to Checkout</button>
+                    <button className='normal' onClick={() => {
+                        if (token) {
+                            if (cart.length > 0) {
+                                if (paymentMethod !== null) {
+                                    handleCreateOrder();
+                                } else {
+                                    toast.error('Please select a payment method');
+                                }
+                            } else {
+                                toast.error('Cart is empty');
+                            }
+                        } else {
+                            toast.error('Please login to continue');
+                            setTimeout(() => {
+                                window.location.href = '/demofront/login';
+                            }
+                                , 1000);
+                        }
+                    }}>Proceed to Checkout</button>
                 </div>
             </section>
         </>

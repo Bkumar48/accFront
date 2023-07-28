@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 const Shop = () => {
     const navigate = useNavigate()
     const [products, setProducts] = useState([])
@@ -77,6 +78,7 @@ const Shop = () => {
         }
         else {
             cart.push(product);
+            toast.success("Product added to cart");
             sessionStorage.setItem('cart', JSON.stringify(cart));
 
         }
@@ -106,6 +108,15 @@ const Shop = () => {
             }
         }
     };
+
+    const addCartPromise = (product) => {
+        toast.promise(addCart(product), {
+            loading: 'Adding to cart...',
+            success: 'Added to cart',
+            error: 'Could not add to cart',
+        });
+    }
+
 
     return (
         <>
@@ -147,7 +158,7 @@ const Shop = () => {
                                             <h4><span>Price:</span> $ {product.price}</h4>
                                         </div>
                                         <Link to='#' className='btn'><i class="fa-solid fa-cart-shopping cart" onClick={() => {
-                                            Cookies.get('token') ? addCart(product) : addToCart(product)
+                                            Cookies.get('token') ? addCartPromise(product) : addToCart(product)
                                         }}></i></Link>
                                     </div>
                                 ))

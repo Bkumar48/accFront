@@ -40,6 +40,10 @@ p {
   margin: 15px 0 20px 0;
 }
 
+body {
+  scroll-behavior: smooth;
+}
+
 /* Login/Signup page starts */
 
 #login {
@@ -423,7 +427,7 @@ body {
 
 #header .logo {
   height: auto;
-  width: 12.5rem;
+  width: 12.5em;
 }
 
 #navbar {

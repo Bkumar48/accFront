@@ -5,72 +5,46 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import Cookies from 'js-cookie';
 
+// Get cart count from database---------------------------------------------
+export const fetchCart = async () => {
+  if (Cookies.get('token')) {
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(data.data.items.length)
+      return data.data.items.length;
+    } catch (error) {
+      // console.log(error);
+      return 0;
+    }
+  }
+}
+
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isNavActive, setIsNavActive] = useState(false);
-  const [cartCount, setCartCount] = useState();
+  const [cartCount, setCartCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
   const [isLoggedin, setIsLoggedin] = useState(false);
   const token = Cookies.get('token');
 
-  const handleclick = () => {
-    window.open(`http://localhost:3001`, "_self");
+  if (token) {
+    fetchCart().then((res) => {
+      setCartCount(res);
+    })
   }
 
+  // Get cart count from session storage---------------------------------------
   const productCount = () => {
     const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
     setCartCount(cart.length);
   };
-
-
-  // const cart = async () => {
-  //   if (token) {
-  //     try {
-  //       const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           'Content-Type': 'application/json',
-  //         },
-  //       });
-  //       setCartCount(data.data.items.length);
-  //     } catch (error) {
-  //       if (error.response.data.msg !== 'Cart not Found') {
-  //         console.log(error.response.data.msg);
-  //       }
-  //       setCartCount(0);
-  //     }
-  //   } else {
-  //     setCartCount(productCount());
-  //   }
-  // };
-
-  // if(token){
-  //   const cart = async () => {
-  //     try {
-  //       const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/v1/cart/getCart/`, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           'Content-Type': 'application/json',
-  //         },
-  //       });
-  //       setCartCount(data.data.items.length);
-  //     } catch (error) {
-  //       if (error.response.data.msg !== 'Cart not Found') {
-  //         console.log(error.response.data.msg);
-  //       }
-  //       setCartCount(0);
-  //     }
-  //   };
-  //   cart();
-  // }else{
-  //   setCartCount(productCount());
-  // }
-
-
-
-
-
-
 
   useEffect(() => {
     if (Cookies.get('token')) {
@@ -78,44 +52,58 @@ const Header = () => {
     }
   }, [Cookies.get('token')]);
 
+  // useEffect for cart array changes
+  useEffect(() => {
+    if (!token) {
+      productCount();
+    }
+  }, [sessionStorage.getItem('cart')]);
+
+  // Scroll to the top of the page when the route changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, [location.pathname]);
+
   return (
     <section id="header">
-      <a href="/">
+      <a href="/demofront/">
         <img src={logo} alt="logo" className="logo" />
       </a>
       <div>
         <ul id="navbar" className={isNavActive ? 'active' : ''}>
           <li>
-            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+            <Link to="/demofront/" className={location.pathname === '/demofront/' ? 'active' : ''}>
               Home
             </Link>
           </li>
           <li>
-            <Link to="/shop" className={location.pathname === '/shop' ? 'active' : ''}>
+            <Link to="/demofront/shop" className={location.pathname === '/demofront/shop' ? 'active' : ''}>
               Shop
             </Link>
           </li>
           <li>
-            <Link to="/blog" className={location.pathname === '/blog' ? 'active' : ''}>
+            <Link to="/demofront/blog" className={location.pathname === '/demofront/blog' ? 'active' : ''}>
               Blog
             </Link>
           </li>
           <li>
-            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>
+            <Link to="/demofront/about" className={location.pathname === '/demofront/about' ? 'active' : ''}>
               About
             </Link>
           </li>
           <li>
-            <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>
+            <Link to="/demofront/contact" className={location.pathname === '/demofront/contact' ? 'active' : ''}>
               Contact
             </Link>
           </li>
           {
             isLoggedin ? (
               <li>
-                <Link to="" onClick={() => {
-                  handleclick();
-                }}  >
+                <Link to="/userpanel/"
+                >
                   Dashboard
                 </Link>
               </li>)
@@ -139,10 +127,9 @@ const Header = () => {
                           onClick={() => toast.dismiss(t.id)}
                         >No</button>
                         <button onClick={() => {
-                          // sessionStorage.removeItem('token');
                           Cookies.remove('token');
                           setIsLoggedin(false);
-                          navigate('/');
+                          navigate('/demofront/');
                           toast.dismiss(t.id)
                         }} style={{
                           backgroundColor: 'green',
@@ -156,7 +143,6 @@ const Header = () => {
                 }, {
                   position: 'top-right',
                 })
-                // navigate('/');
               }}
             >
               Logout
@@ -165,14 +151,14 @@ const Header = () => {
             <li
               className="login"
               onClick={() => {
-                navigate('/login');
+                navigate('/demofront/login');
               }}
             >
               Login
             </li>
           )}
           <li id="lg-bag">
-            <Link to="/cart" className={location.pathname === '/cart' ? 'active' : ''}>
+            <Link to="/demofront/cart" className={location.pathname === '/demofront/cart' ? 'active' : ''}>
               <i className="fa-solid fa-bag-shopping">
                 <span className="big-count count">{cartCount}</span>
               </i>
@@ -190,7 +176,7 @@ const Header = () => {
         </ul>
       </div>
       <div id="mobile">
-        <Link to="/cart">
+        <Link to="/demofront/cart">
           <i className="fa-solid fa-bag-shopping">
             <span className="tab-count count">{cartCount}</span>
           </i>

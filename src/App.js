@@ -27,20 +27,20 @@ function App() {
 
 const AppRoutes = () => {
   const location = useLocation();
-  const shouldShowHeaderFooter = location.pathname !== '/login';
+  const shouldShowHeaderFooter = location.pathname !== '/demofront/login';
 
   return (
     <>
       {shouldShowHeaderFooter && <Header />}
       <Routes>
-        <Route path="/login" element={<LoginSignup />} />
-        <Route path="/" element={<HomeLayout />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/product/:id" element={<Sproduct />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/demofront/login" element={<LoginSignup />} />
+        <Route path="/demofront/" element={<HomeLayout />} />
+        <Route path="/demofront/shop" element={<Shop />} />
+        <Route path="/demofront/product/:id" element={<Sproduct />} />
+        <Route path="/demofront/blog" element={<Blog />} />
+        <Route path="/demofront/about" element={<About />} />
+        <Route path="/demofront/contact" element={<Contact />} />
+        <Route path="/demofront/cart" element={<Cart />} />
       </Routes>
       {shouldShowHeaderFooter && <NewsLetter />}
       {shouldShowHeaderFooter && <Footer />}

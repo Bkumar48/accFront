@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios';
+import toast from 'react-hot-toast';
+import Cookies from 'js-cookie';
+import { fetchCart } from './../common/Header';
 
 const FeaturedProducts = () => {
     const [products, setProducts] = useState([])
@@ -10,9 +13,10 @@ const FeaturedProducts = () => {
 
     // Add to cart if Logged in
     const addCart = async (product) => {
-        const token = sessionStorage.getItem('token');
+        const token = Cookies.get('token');
         if (token) {
             try {
+                setLoading(true);
                 const { data } = await axios.post(
                     `${process.env.REACT_APP_BASE_URL}/api/v1/cart/addCart`,
                     {
@@ -26,12 +30,20 @@ const FeaturedProducts = () => {
                         },
                     }
                 );
-                console.log(data);
+                setLoading(false);
             } catch (error) {
                 console.log(error);
             }
         }
     };
+
+    const addCartPromise = (product) => {
+        toast.promise(addCart(product), {
+            loading: 'Adding to cart...',
+            success: 'Added to cart',
+            error: 'Could not add to cart',
+        });
+    }
 
     const fetchProducts = async () => {
         setLoading(true)
@@ -53,11 +65,27 @@ const FeaturedProducts = () => {
 
     const addToCart = (product) => {
         const cart = sessionStorage.getItem('cart') ? JSON.parse(sessionStorage.getItem('cart')) : [];
-        cart.push(product);
-        sessionStorage.setItem('cart', JSON.stringify(cart));
-    }
+        const existingProduct = cart.find((item) => item.Id === product.Id);
+        const Quantity = product.min_qty;
+        if (existingProduct) {
+            alert('Product already in cart');
+            for (let i = 0; i < cart.length; i++) {
+                if (cart[i].Id === product.Id) {
+                    const oldQty = cart[i].min_qty;
+                    cart[i].min_qty = Quantity + oldQty;
+                    sessionStorage.setItem('cart', JSON.stringify(cart));
+                }
+            }
+        }
+        else {
+            cart.push(product);
+            toast.success("Product added to cart",{
+                duration:800,
+            });
+            sessionStorage.setItem('cart', JSON.stringify(cart));
 
-    
+        }
+    }
 
     return (
         <section id="product1" className='section-p1'>
@@ -68,7 +96,6 @@ const FeaturedProducts = () => {
                     products.map((product) => (
                         <div className='pro' key={product.Id}>
                             <img src={`https://demo.adaired.com/demoadaired/upload/product/${product.image}`} alt="product" />
-                            {/* <img src={`https://demo.adaired.com/nodeapi/upload/image_1676007690871.jpg`} alt="product" /> */}
                             <div className='des'>
                                 <span>{product.type}</span>
                                 <h4>{product.banner_title}</h4>
@@ -83,7 +110,7 @@ const FeaturedProducts = () => {
                                 <h4><span>Price:</span> $ {product.price}</h4>
                             </div>
                             <Link to='#' className='btn'><i class="fa-solid fa-cart-shopping cart" onClick={() => {
-                                sessionStorage.getItem('token') ? addCart(product) : addToCart(product)
+                                Cookies.get('token') ? addCartPromise(product) : addToCart(product)
                             }}></i></Link>
                         </div>
                     ))
