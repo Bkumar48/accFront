@@ -18,6 +18,9 @@
     "sass": "^1.63.6",
     "web-vitals": "^2.1.4"
   },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "latest" 
+  },
   "scripts": {
     "start": "set PORT=3000 && react-scripts start",
     "build": "react-scripts build",
